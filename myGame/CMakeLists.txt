@@ -4,7 +4,6 @@ project(myGame)
 set(CMAKE_CXX_STANDARD 20)
 
 set(SFML_DIR "C:/SFML/lib/cmake/SFML")
-include_directories("C:/SFML/include")
 
 find_package(SFML 2.6.2 COMPONENTS graphics window system REQUIRED)
 
@@ -15,6 +14,8 @@ add_executable(myGame Game.cpp
         Game.h
         Player.h
         Enemy.h
-        Enemy.cpp)
+        Enemy.cpp
+        Bullet.h
+        Bullet.cpp)
 
 target_link_libraries(myGame sfml-graphics sfml-window sfml-system)
