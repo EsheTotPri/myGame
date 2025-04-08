@@ -1,20 +1,19 @@
 #include "Game.h"
 #include "Enemy.h"
-
 #include <iostream>
-#include <math.h>
 
-Game::Game() : window(sf::VideoMode(1600, 900), "Vampire Survivors Clone") {
-    camera.setSize(1600,900);
-    camera.setCenter(400,600);
+Game::Game() {
+    sf::VideoMode desktopMode = sf::VideoMode::getDesktopMode();
 
-    if (!backgroundTexture.loadFromFile(R"(C:\Users\jolly\CLionProjects\myGame\assets\grass.jpg)")) {
+    window.create(desktopMode, "Vampire Survivors Clone", sf::Style::Fullscreen);
+
+    camera.setSize(desktopMode.width, desktopMode.height);
+    camera.setCenter(desktopMode.width / 2.f, desktopMode.height / 2.f);
+
+    if (!backgroundTexture.loadFromFile("C:\\Users\\User\\CLionProjects\\myGame\\assets\\grass.jpg")) { // поменять на путь к ассетам на своем компе
         std::cout << "Error loading background texture" << std::endl;
     }
     backgroundSprite.setTexture(backgroundTexture);
-
-
-
 }
 
 void Game::run() {
@@ -34,8 +33,8 @@ void Game::processEvents() {
 }
 
 void Game::update() {
-    player.update();
-    Enemy.update();
+    player.update(enemy);
+    enemy.update();
     camera.setCenter(player.getPosition());
     window.setView(camera);
 }
@@ -65,6 +64,13 @@ void Game::render() {
     }
 
     player.draw(window);
-    Enemy.draw(window);
+    for (const auto& bullet : player.getBullets()) {
+        bullet.draw(window);
+    }
+
+    if (enemy.isAlive()) {
+        enemy.draw(window);
+    }
+
     window.display();
 }
