@@ -1,7 +1,3 @@
-//
-// Created by User on 13.02.2025.
-//
-
 #ifndef GAME_H
 #define GAME_H
 
@@ -10,24 +6,21 @@
 #include "Enemy.h"
 
 class Game {
-    private:
+private:
     sf::RenderWindow window;
     sf::View camera;
     sf::Texture backgroundTexture;
     sf::Sprite backgroundSprite;
     Player player;
-    Enemy Enemy;
+    Enemy enemy;
 
     void processEvents();
     void update();
     void render();
 
-
-    public:
+public:
     Game();
     void run();
 };
-
-
 
 #endif //GAME_H
