@@ -2,7 +2,7 @@
 #define PLAYER_H
 
 #include "Bullet.h"
-#include "Enemy.h"
+class Enemy;
 
 #include <SFML/Graphics.hpp>
 
@@ -12,9 +12,10 @@ private:
     sf::Sprite playerSprite;
     std::vector<Bullet> bullets;
     sf::Clock shootClock;
-
+    int health = 100;
     float speed;
     float shootDelay = 0.8f;
+    bool dead = false;
 
 public:
     Player();
@@ -25,6 +26,14 @@ public:
     sf::Vector2f getPosition() const;
     const std::vector<Bullet>& getBullets() const;
     std::vector<Bullet>& getBullets();
+
+    void takeDamage(int damage);
+    int getHealth() const {return health;}
+
+    bool isDead() const {return dead;}
+
+    sf::FloatRect getGlobalBounds() const;
+
 };
 
 #endif //PLAYER_H
