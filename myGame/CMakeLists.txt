@@ -16,6 +16,10 @@ add_executable(myGame Game.cpp
         Enemy.h
         Enemy.cpp
         Bullet.h
-        Bullet.cpp)
+        Bullet.cpp
+        EnvironmentObjects.h
+        EnvironmentObjects.cpp
+        EnvironmentManager.h
+        EnvironmentManager.cpp)
 
 target_link_libraries(myGame sfml-graphics sfml-window sfml-system)
