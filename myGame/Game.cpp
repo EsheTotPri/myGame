@@ -1,8 +1,15 @@
 #include "Game.h"
 #include "Enemy.h"
 #include <iostream>
+#include <cstdlib>
+#include <ctime>
+#include "EnvironmentManager.h"
 
-Game::Game() {
+
+Game::Game()
+    : window(sf::VideoMode(1280, 720), "My Game"),
+      environment(window.getSize())
+    {
     sf::VideoMode desktopMode = sf::VideoMode::getDesktopMode();
 
     window.create(desktopMode, "Vampire Survivors Clone", sf::Style::Fullscreen);
@@ -10,10 +17,13 @@ Game::Game() {
     camera.setSize(desktopMode.width, desktopMode.height);
     camera.setCenter(desktopMode.width / 2.f, desktopMode.height / 2.f);
 
-    if (!backgroundTexture.loadFromFile("C:\\Users\\User\\CLionProjects\\myGame\\assets\\grass.jpg")) { // поменять на путь к ассетам на своем компе
+    if (!backgroundTexture.loadFromFile("C:\\Users\\User\\CLionProjects\\myGame\\assets\\grass.png")) { // поменять на путь к ассетам на своем компе
         std::cout << "Error loading background texture" << std::endl;
     }
     backgroundSprite.setTexture(backgroundTexture);
+    backgroundSprite.setScale(2.f, 2.f);
+
+
 }
 
 void Game::run() {
@@ -34,9 +44,25 @@ void Game::processEvents() {
 
 void Game::update() {
     player.update(enemy);
-    enemy.update();
+    environment.update(player.getPosition());
+    enemy.update(player.getPosition(), player);
     camera.setCenter(player.getPosition());
     window.setView(camera);
+    if (player.isDead()) {
+        sf::Font font;
+        font.loadFromFile("C:\\Users\\User\\CLionProjects\\myGame\\fonts\\DmitrievaSP.otf");
+
+        sf::Text deathMessage("PIZDEC TI EBLAN AHAHA))", font, 100);
+        deathMessage.setPosition(window.getSize().x / 8 - deathMessage.getGlobalBounds().width / 8,
+                                 window.getSize().y / 4 - deathMessage.getGlobalBounds().height / 4);
+        window.clear();
+        window.draw(deathMessage);
+        window.display();
+        sf::sleep(sf::seconds(2));
+    } else {
+        player.update(enemy);
+        enemy.update(player.getPosition(), player);
+    }
 }
 
 void Game::render() {
@@ -62,6 +88,7 @@ void Game::render() {
             window.draw(backgroundSprite);
         }
     }
+    environment.draw(window);
 
     player.draw(window);
     for (const auto& bullet : player.getBullets()) {
@@ -71,6 +98,7 @@ void Game::render() {
     if (enemy.isAlive()) {
         enemy.draw(window);
     }
+
 
     window.display();
 }
