@@ -10,8 +10,8 @@ Player::Player() {
     sf::FloatRect bounds = playerSprite.getLocalBounds();
     playerSprite.setOrigin(bounds.width / 2, bounds.height / 2);
     playerSprite.setPosition({400, 300});
-    playerSprite.setScale(0.25f, 0.25f);
-    speed = 1.0f;
+    playerSprite.setScale(0.15f, 0.15f);
+    speed = 0.5f;
 }
 
 void Player::handleInput() {
@@ -46,8 +46,22 @@ void Player::draw(sf::RenderWindow &window) {
     window.draw(playerSprite);
 }
 
+void Player::takeDamage(int damage) {
+    health -= damage;
+    if (health <= 0) {
+        health = 0;
+        dead = true;
+    }
+    std::cout << "Player took damage! Current health: " << health << std::endl;
+}
+
+
 sf::Vector2f Player::getPosition() const {
     return playerSprite.getPosition();
+}
+
+sf::FloatRect Player::getGlobalBounds() const {
+    return playerSprite.getGlobalBounds();
 }
 
 const std::vector<Bullet>& Player::getBullets() const {
@@ -57,3 +71,4 @@ const std::vector<Bullet>& Player::getBullets() const {
 std::vector<Bullet>& Player::getBullets() {
     return bullets;
 }
+
