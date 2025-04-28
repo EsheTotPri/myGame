@@ -1,9 +1,11 @@
 #ifndef GAME_H
 #define GAME_H
 
-#include <SFML/Graphics.hpp>
-#include "Player.h"
 #include "Enemy.h"
+#include "EnvironmentObjects.h"
+#include "Player.h"
+#include <SFML/Graphics.hpp>
+#include "EnvironmentManager.h"
 
 class Game {
 private:
@@ -13,6 +15,12 @@ private:
     sf::Sprite backgroundSprite;
     Player player;
     Enemy enemy;
+    EnvironmentManager environment;
+    std::vector<EnvironmentObjects> environmentObjects;
+    sf::Texture treeTexture;
+    sf::Texture rockTexture;
+    sf::Texture stickTexture;
+
 
     void processEvents();
     void update();
