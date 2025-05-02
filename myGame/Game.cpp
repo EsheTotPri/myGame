@@ -44,12 +44,12 @@ void Game::processEvents() {
 
 void Game::update() {
     const float deltaTime = deltaClock.restart().asSeconds();
-    player.update(enemies, deltaTime);
-
     if (player.isDead()) {
-        player.update(enemies, deltaTime);
+        camera.setCenter(player.getPosition());
+        window.setView(camera);
+        return;
     }
-
+    player.update(enemies, deltaTime);
     environment.update(player.getPosition());
 
     if (waveClock.getElapsedTime().asSeconds() >= timeBetweenWaves) {
@@ -63,19 +63,6 @@ void Game::update() {
 
     camera.setCenter(player.getPosition());
     window.setView(camera);
-
-    if (player.isDead()) {
-        sf::Font font;
-        font.loadFromFile("D:\\myGame\\fonts\\DmitrievaSP.otf");
-
-        sf::Text deathMessage("You Died", font, 100);
-        deathMessage.setPosition(window.getSize().x / 8 - deathMessage.getGlobalBounds().width / 8,
-                                 window.getSize().y / 4 - deathMessage.getGlobalBounds().height / 4);
-        window.clear();
-        window.draw(deathMessage);
-        window.display();
-        sf::sleep(sf::seconds(2));
-    }
 }
 
 void Game::spawnEnemies() {
@@ -138,6 +125,23 @@ void Game::render() {
             enemy.draw(window);
         }
     }
+    if (player.isDead()) {
+        static sf::Font font;
+        static bool loaded = font.loadFromFile("D:\\myGame\\fonts\\DmitrievaSP.otf");
+
+        if (loaded) {
+            sf::Text deathMessage("YOU DIED", font, 150);
+            deathMessage.setFillColor(sf::Color::Red);
+            deathMessage.setStyle(sf::Text::Bold);
+
+            sf::FloatRect textRect = deathMessage.getLocalBounds();
+            deathMessage.setOrigin(textRect.width / 2, textRect.height / 2);
+            deathMessage.setPosition(camera.getCenter());
+
+            window.draw(deathMessage);
+        }
+    }
+
 
     window.display();
 }
