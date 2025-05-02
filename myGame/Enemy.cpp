@@ -3,16 +3,22 @@
 #include <cmath>
 #include "Player.h"
 
-Enemy::Enemy() : speed(1.0f), direction(0, 0), changeDirection(1.f), health(50) {
-    std::srand(static_cast<unsigned int>(std::time(nullptr)));
+sf::Texture Enemy::enemyTexture;
 
-    if (!enemyTexture.loadFromFile("C:\\Users\\User\\CLionProjects\\myGame\\assets\\enemy.png")) {
-        std::cout << "Error loading enemy texture" << std::endl;
+void Enemy::loadTexture() {
+    if (enemyTexture.getSize().x == 0) {
+        if (!enemyTexture.loadFromFile("D:\\myGame\\assets\\enemy.png")) {
+            std::cerr << "Error: cannot load enemy.png from D:\\myGame\\assets" << std::endl;
+        } else {
+            std::cout << "Enemy texture loaded OK" << std::endl;
+        }
     }
-    enemySprite.setTexture(enemyTexture);
-    enemySprite.setPosition(400, 300);
-    enemySprite.setScale(0.15f, 0.15f);
+}
 
+Enemy::Enemy() : speed(150.0f), direction(0, 0), changeDirection(2.f), health(5) {
+    loadTexture();
+    enemySprite.setTexture(enemyTexture);
+    enemySprite.setScale(0.15f, 0.15f);
     randomizeDirection();
 }
 
@@ -21,17 +27,31 @@ void Enemy::randomizeDirection() {
     direction.y = (std::rand() % 3 - 1);
 }
 
-void Enemy::update(const sf::Vector2f& playerPosition, Player& player) {
-    if (!isAlive())
-        return;
+void Enemy::update(float deltaTime, const sf::Vector2f& playerPosition, Player& player, std::vector<Enemy>& enemies) {
+    if (!isAlive()) return;
 
     sf::Vector2f direction = playerPosition - enemySprite.getPosition();
     float length = std::sqrt(direction.x * direction.x + direction.y * direction.y);
 
-    if (length != 0)
+    if (length != 0) {
         direction /= length;
+    }
 
-    enemySprite.move(direction * speed * 0.16f);
+    for (auto& otherEnemy : enemies) {
+        if (&otherEnemy != this && otherEnemy.isAlive()) {
+            if (this->getBounds().intersects(otherEnemy.getBounds())) {
+                sf::Vector2f pushAway = enemySprite.getPosition() - otherEnemy.getPosition();
+                float lengthPush = std::sqrt(pushAway.x * pushAway.x + pushAway.y * pushAway.y);
+
+                if (lengthPush != 0) {
+                    pushAway /= lengthPush;
+                    enemySprite.move(pushAway * speed * deltaTime);
+                }
+            }
+        }
+    }
+
+    enemySprite.move(direction * speed * deltaTime);
 
     if (enemySprite.getGlobalBounds().intersects(player.getGlobalBounds())) {
         if (attackCooldown.getElapsedTime() >= attackDelay) {
