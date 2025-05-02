@@ -1,29 +1,29 @@
 #include "Game.h"
 #include "Enemy.h"
-#include <iostream>
+#include "EnvironmentManager.h"
 #include <cstdlib>
 #include <ctime>
-#include "EnvironmentManager.h"
-
+#include <iostream>
+#include <cmath>
 
 Game::Game()
     : window(sf::VideoMode(1280, 720), "My Game"),
       environment(window.getSize())
-    {
+{
+    std::srand(static_cast<unsigned>(std::time(nullptr)));
     sf::VideoMode desktopMode = sf::VideoMode::getDesktopMode();
-
     window.create(desktopMode, "Vampire Survivors Clone", sf::Style::Fullscreen);
 
-    camera.setSize(desktopMode.width, desktopMode.height);
-    camera.setCenter(desktopMode.width / 2.f, desktopMode.height / 2.f);
+    std::cout << "Window size: " << window.getSize().x << " x " << window.getSize().y << std::endl;
 
-    if (!backgroundTexture.loadFromFile("C:\\Users\\User\\CLionProjects\\myGame\\assets\\grass.png")) { // поменять на путь к ассетам на своем компе
+    camera.setSize(window.getSize().x, window.getSize().y);
+    camera.setCenter(window.getSize().x / 2.f, window.getSize().y / 2.f);
+
+    if (!backgroundTexture.loadFromFile("D:\\myGame\\assets\\grass.png")) {
         std::cout << "Error loading background texture" << std::endl;
     }
     backgroundSprite.setTexture(backgroundTexture);
     backgroundSprite.setScale(2.f, 2.f);
-
-
 }
 
 void Game::run() {
@@ -43,30 +43,68 @@ void Game::processEvents() {
 }
 
 void Game::update() {
-    player.update(enemy);
+    const float deltaTime = deltaClock.restart().asSeconds();
+    player.update(enemies, deltaTime);
+
+    if (player.isDead()) {
+        player.update(enemies, deltaTime);
+    }
+
     environment.update(player.getPosition());
-    enemy.update(player.getPosition(), player);
+
+    if (waveClock.getElapsedTime().asSeconds() >= timeBetweenWaves) {
+        spawnEnemies();
+        waveClock.restart();
+    }
+
+    for (auto& enemy : enemies) {
+        enemy.update(deltaTime, player.getPosition(), player, enemies);
+    }
+
     camera.setCenter(player.getPosition());
     window.setView(camera);
+
     if (player.isDead()) {
         sf::Font font;
-        font.loadFromFile("C:\\Users\\User\\CLionProjects\\myGame\\fonts\\DmitrievaSP.otf");
+        font.loadFromFile("D:\\myGame\\fonts\\DmitrievaSP.otf");
 
-        sf::Text deathMessage("PIZDEC TI EBLAN AHAHA))", font, 100);
+        sf::Text deathMessage("You Died", font, 100);
         deathMessage.setPosition(window.getSize().x / 8 - deathMessage.getGlobalBounds().width / 8,
                                  window.getSize().y / 4 - deathMessage.getGlobalBounds().height / 4);
         window.clear();
         window.draw(deathMessage);
         window.display();
         sf::sleep(sf::seconds(2));
-    } else {
-        player.update(enemy);
-        enemy.update(player.getPosition(), player);
     }
 }
 
+void Game::spawnEnemies() {
+    const sf::Vector2f playerPos = player.getPosition();
+    const float minSpawnDistance = 1200.f;
+    const float maxSpawnDistance = 2000.f;
+
+    for (int i = 0; i < enemiesPerWave; ++i) {
+        Enemy newEnemy;
+
+        float angle = static_cast<float>(rand()) / RAND_MAX * 2.f * 3.1415926f;
+        float distance = minSpawnDistance + static_cast<float>(rand()) / RAND_MAX * (maxSpawnDistance - minSpawnDistance);
+
+        float x = playerPos.x + std::cos(angle) * distance;
+        float y = playerPos.y + std::sin(angle) * distance;
+
+        newEnemy.setPosition(x, y);
+        enemies.push_back(newEnemy);
+    }
+
+    enemiesPerWave += 2;
+    currentWave++;
+}
+
+
+
 void Game::render() {
     window.clear();
+    window.setFramerateLimit(144);
 
     sf::Vector2f viewCenter = camera.getCenter();
     sf::Vector2f viewSize = camera.getSize();
@@ -95,10 +133,11 @@ void Game::render() {
         bullet.draw(window);
     }
 
-    if (enemy.isAlive()) {
-        enemy.draw(window);
+    for (const auto& enemy : enemies) {
+        if (enemy.isAlive()) {
+            enemy.draw(window);
+        }
     }
-
 
     window.display();
 }
