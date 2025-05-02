@@ -1,39 +1,65 @@
 #include "Player.h"
 #include "Enemy.h"
+#include <algorithm>
+#include <cmath>
 #include <iostream>
 
 Player::Player() {
-    if (!playerTexture.loadFromFile("C:\\Users\\User\\CLionProjects\\myGame\\assets\\player.png")) {
-        std::cout << "Error loading background texture" << std::endl;
+    if (!playerTexture.loadFromFile("D:\\myGame\\assets\\player.png")) {
+        std::cout << "Error loading player texture" << std::endl;
     }
     playerSprite.setTexture(playerTexture);
     sf::FloatRect bounds = playerSprite.getLocalBounds();
     playerSprite.setOrigin(bounds.width / 2, bounds.height / 2);
     playerSprite.setPosition({400, 300});
     playerSprite.setScale(0.15f, 0.15f);
-    speed = 0.5f;
+
+    speed = 200.f;
 }
 
-void Player::handleInput() {
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) playerSprite.move(0, -speed);
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) playerSprite.move(0, speed);
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) playerSprite.move(-speed, 0);
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) playerSprite.move(speed, 0);
-}
+void Player::update(std::vector<Enemy>& enemies, float deltaTime) {
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) playerSprite.move(0, -speed * deltaTime);
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) playerSprite.move(0, speed * deltaTime);
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) playerSprite.move(-speed * deltaTime, 0);
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) playerSprite.move(speed * deltaTime, 0);
 
-void Player::update(Enemy& enemy) {
-    handleInput();
+    Enemy* closestEnemy = nullptr;
+    float closestDistanceSq = std::numeric_limits<float>::max();
+    sf::Vector2f playerPos = playerSprite.getPosition();
+    float shootRange = 500.f;
 
-    if (shootClock.getElapsedTime().asSeconds() >= shootDelay && enemy.isAlive()) {
-        bullets.emplace_back(playerSprite.getPosition(), enemy.getPosition());
-        shootClock.restart();
+    for (auto& e : enemies) {
+        if (!e.isAlive()) continue;
+
+        float dx = e.getPosition().x - playerPos.x;
+        float dy = e.getPosition().y - playerPos.y;
+        float distSq = dx * dx + dy * dy;
+
+        if (distSq < closestDistanceSq) {
+            closestDistanceSq = distSq;
+            closestEnemy = &e;
+        }
+    }
+
+    if (closestEnemy && shootClock.getElapsedTime().asSeconds() >= shootDelay) {
+        float dx = closestEnemy->getPosition().x - playerPos.x;
+        float dy = closestEnemy->getPosition().y - playerPos.y;
+        float distance = std::sqrt(dx * dx + dy * dy);
+
+        if (distance <= shootRange) {
+            bullets.emplace_back(playerPos, closestEnemy->getPosition());
+            shootClock.restart();
+        }
     }
 
     for (auto& bullet : bullets) {
         bullet.update();
-        if (bullet.isActive && bullet.getBounds().intersects(enemy.getBounds())) {
-            bullet.isActive = false;
-            enemy.takeDamage();
+        for (auto& enemy : enemies) {
+            if (enemy.isAlive() && bullet.isActive && bullet.getBounds().intersects(enemy.getBounds())) {
+                bullet.isActive = false;
+                enemy.takeDamage();
+                break;
+            }
         }
     }
 
@@ -55,7 +81,6 @@ void Player::takeDamage(int damage) {
     std::cout << "Player took damage! Current health: " << health << std::endl;
 }
 
-
 sf::Vector2f Player::getPosition() const {
     return playerSprite.getPosition();
 }
@@ -71,4 +96,3 @@ const std::vector<Bullet>& Player::getBullets() const {
 std::vector<Bullet>& Player::getBullets() {
     return bullets;
 }
-
