@@ -20,6 +20,12 @@ private:
     sf::Texture treeTexture;
     sf::Texture rockTexture;
     sf::Texture stickTexture;
+    sf::Clock deltaClock;
+    std::vector<Enemy> enemies;
+    int currentWave = 1;
+    int enemiesPerWave = 3;
+    float timeBetweenWaves = 5.f;
+    sf::Clock waveClock;
 
 
     void processEvents();
@@ -29,6 +35,8 @@ private:
 public:
     Game();
     void run();
+    void spawnEnemies();
+    bool areAllEnemiesDefeated() const;
 };
 
 #endif //GAME_H
