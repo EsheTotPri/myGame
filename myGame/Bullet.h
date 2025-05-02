@@ -14,9 +14,13 @@ public:
   bool isActive;
 
 private:
-  sf::CircleShape shape;
+  sf::Sprite sprite;
+  static sf::Texture bulletTexture;
   sf::Vector2f velocity;
-  float speed = 1.f;
+  float speed = 1.5f;
+  float maxRange = 600.f;
+  float distanceTraveled = 0.f;
 };
+
 
 #endif
