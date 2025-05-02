@@ -3,7 +3,6 @@
 
 #include "Bullet.h"
 class Enemy;
-
 #include <SFML/Graphics.hpp>
 
 class Player {
@@ -19,21 +18,18 @@ private:
 
 public:
     Player();
-    void handleInput();
-    void update(Enemy& enemy);
+    void update(std::vector<Enemy>& enemies, float deltaTime);
     void draw(sf::RenderWindow &window);
 
     sf::Vector2f getPosition() const;
     const std::vector<Bullet>& getBullets() const;
     std::vector<Bullet>& getBullets();
+    void handleInput();
 
     void takeDamage(int damage);
-    int getHealth() const {return health;}
-
-    bool isDead() const {return dead;}
-
+    int getHealth() const { return health; }
+    bool isDead() const { return dead; }
     sf::FloatRect getGlobalBounds() const;
-
 };
 
 #endif //PLAYER_H
