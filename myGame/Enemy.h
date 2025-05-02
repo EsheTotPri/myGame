@@ -8,28 +8,30 @@ class Player;
 
 class Enemy {
 private:
+    static sf::Texture enemyTexture;
     sf::Sprite enemySprite;
-    sf::Texture enemyTexture;
     float speed;
     sf::Vector2f direction;
     sf::Clock movementClock;
     float changeDirection;
     int health;
-    int damage = 10;
+    int damage = 1;
 
 public:
     Enemy();
-    void update(const sf::Vector2f& playerPosition, Player& player);
+    static void loadTexture();
+    void update(float deltaTime, const sf::Vector2f &playerPosition,
+                Player &player, std::vector<Enemy> &enemies);
     sf::Vector2f getPosition() const;
     void draw(sf::RenderWindow& window) const;
     void randomizeDirection();
-
+    void setPosition(float x, float y) { enemySprite.setPosition(x, y); }
     void takeDamage();
     bool isAlive() const;
     sf::FloatRect getBounds() const;
     sf::Clock attackCooldown;
     sf::Time attackDelay = sf::seconds(1.f);
-
 };
+
 
 #endif //ENEMY_H
